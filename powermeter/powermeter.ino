@@ -3,7 +3,8 @@
 #include <LiquidCrystal.h>
 
 #define RELAY 7
-#define RELAY_BUTTON 2
+#define RELAY_BUTTON 0
+uint8_t buttonState = 0;
 
 Adafruit_INA219 ina219;
 
@@ -22,9 +23,7 @@ void setup(void)
 	Serial.println("Measuring voltage and current with INA219 ...");
 	ina219.begin();
 	pinMode(RELAY, OUTPUT);
-	pinMode(RELAY_BUTTON, INPUT);
 	digitalWrite(RELAY, LOW);
-	attachInterrupt(0, relay, RISING);
 	lcd.setCursor(0, 0);
 	lcd.print("PowerMeter");
 	delay(4000);
@@ -32,7 +31,15 @@ void setup(void)
 
 void loop(void) 
 {
-	uint8_t b;
+	uint16_t b;
+	b = analogRead(RELAY_BUTTON);
+	if(b > 500 and buttonState == 0) {
+		buttonState = 1;
+		relay();
+	}
+	else {
+		buttonState = 0;
+	}
 	float shuntvoltage = 0;
 	float busvoltage = 0;
 	float current_mA = 0;
