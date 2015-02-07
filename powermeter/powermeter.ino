@@ -1,6 +1,9 @@
 #include <Wire.h>
 #include <Adafruit_INA219.h>
 
+#define RELAY 3
+#define RELAY_BUTTON 5
+
 Adafruit_INA219 ina219;
 
 void setup(void) 
@@ -10,10 +13,15 @@ void setup(void)
 	Serial.begin(9600);
 	Serial.println("Measuring voltage and current with INA219 ...");
 	ina219.begin();
+	pinMode(RELAY, OUTPUT);
+	pinMode(RELAY_BUTTON, INPUT);
+	digitalWrite(RELAY, LOW);
+	attachInterrupt(0, relay, RISING);
 }
 
 void loop(void) 
 {
+	uint8_t b;
 	float shuntvoltage = 0;
 	float busvoltage = 0;
 	float current_mA = 0;
@@ -31,4 +39,16 @@ void loop(void)
 	Serial.println("");
 
 	delay(2000);
+}
+
+void relay() {
+	uint8_t r;
+	r = digitalRead(RELAY);
+	if(r == HIGH) {
+		digitalWrite(RELAY, LOW);
+	}
+	else {
+		digitalWrite(RELAY, HIGH);
+	}
+	delay(500);
 }
