@@ -1,22 +1,33 @@
 #include <Wire.h>
 #include <Adafruit_INA219.h>
+#include <LiquidCrystal.h>
 
-#define RELAY 3
-#define RELAY_BUTTON 5
+#define RELAY 7
+#define RELAY_BUTTON 2
 
 Adafruit_INA219 ina219;
+
+// initialize the library with the numbers of the interface pins
+LiquidCrystal lcd(12, 11, 5, 4, 3, 6);
+
+// Turn on/off serial debuggin output
+boolean debug = true;
 
 void setup(void) 
 {
 	uint32_t currentFrequency;
 		
 	Serial.begin(9600);
+	lcd.begin(16, 2);
 	Serial.println("Measuring voltage and current with INA219 ...");
 	ina219.begin();
 	pinMode(RELAY, OUTPUT);
 	pinMode(RELAY_BUTTON, INPUT);
 	digitalWrite(RELAY, LOW);
 	attachInterrupt(0, relay, RISING);
+	lcd.setCursor(0, 0);
+	lcd.print("PowerMeter");
+	delay(4000);
 }
 
 void loop(void) 
@@ -32,13 +43,23 @@ void loop(void)
 	current_mA = ina219.getCurrent_mA();
 	loadvoltage = busvoltage + (shuntvoltage / 1000);
 	
+	/*
 	Serial.print("Bus Voltage:	 "); Serial.print(busvoltage); Serial.println(" V");
 	Serial.print("Shunt Voltage: "); Serial.print(shuntvoltage); Serial.println(" mV");
 	Serial.print("Load Voltage:	"); Serial.print(loadvoltage); Serial.println(" V");
 	Serial.print("Current:			 "); Serial.print(current_mA); Serial.println(" mA");
 	Serial.println("");
+	*/
+	lcd.setCursor(0,0);
+	lcd.print("L/V: ");
+	lcd.print(loadvoltage);
+	lcd.print("V  ");
+	lcd.setCursor(0,1);
+	lcd.print("C: ");
+	lcd.print(current_mA);
+	lcd.print("mA ");
 
-	delay(2000);
+	delay(500);
 }
 
 void relay() {
@@ -46,9 +67,13 @@ void relay() {
 	r = digitalRead(RELAY);
 	if(r == HIGH) {
 		digitalWrite(RELAY, LOW);
+		lcd.setCursor(15,0);
+		lcd.print("-");
 	}
 	else {
 		digitalWrite(RELAY, HIGH);
+		lcd.setCursor(15,0);
+		lcd.print("*");
 	}
 	delay(500);
 }
